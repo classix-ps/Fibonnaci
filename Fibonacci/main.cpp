@@ -1,4 +1,5 @@
 #include <mpreal.h> // mpfr::mpreal https://github.com/advanpix/mpreal
+#include <gmpxx.h> // mpz_class https://gmplib.org/manual/C_002b_002b-Interface-General
 
 #include <iostream>
 #include <fstream>
@@ -41,7 +42,7 @@ mpfr::mpreal fibonacci(unsigned int n) {
 	return resultRounded;
 }
 
-bool testList(std::string path) {
+bool testListMPFR(std::string path) {
 	std::ifstream file(path);
 
 	if (!file.is_open()) {
@@ -64,11 +65,43 @@ bool testList(std::string path) {
 	return true;
 }
 
+bool testListMPIR(std::string path) {
+	std::ifstream file(path);
+
+	if (!file.is_open()) {
+		std::cout << "Error opening file." << std::endl;
+		return false;
+	}
+
+	std::string line;
+	while (std::getline(file, line)) {
+		std::string nStr = line.substr(0, line.find(' '));
+		std::string fibStr = line.substr(line.find(' ') + 1);
+
+		mpz_class n(nStr);
+		mpz_class fib = fibonacci(n);
+
+		if (fib.get_str() != fibStr) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 int main() {
 	//mpfr::mpreal result = fibonacci(1240);
 	//std::cout << result.toString() << std::endl;
 
-	std::cout << "Every fibonacci number in list correct? " << testList("../b000045.txt") << std::endl;
+	std::cout << "Every fibonacci number in list correct for mpfr? " << testListMPFR("../b000045.txt") << std::endl;
+	std::cout << "Every fibonacci number in list correct for mpir? " << testListMPIR("../b000045.txt") << std::endl;
+
+	mpfr::mpreal one(1);
+	mpfr::mpreal three(3);
+	mpfr::mpreal third = one / three;
+	mpfr::mpreal prod = three * third;
+	bool precise = prod.toString() == "1";
+	std::cout << "mpfr exact? " << precise << std::endl;
 
 	return 0;
 }
